@@ -1,0 +1,66 @@
+body {
+  background-color: #e3f2fd;
+}
+
+.header-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.option-card {
+  padding: 15px;
+  border-radius: 15px;
+  background: linear-gradient(to right, #b2ebf2, #e0f7fa);
+  transition: transform 0.3s;
+}
+.option-card:hover {
+  background: linear-gradient(to right, #81d4fa, #b2ebf2);
+  transform: scale(1.03);
+}
+.option-card i {
+  font-size: 2rem;
+  color: #1976d2;
+}
+.option-card h5 {
+  font-size: 1rem;
+  margin: .75rem 0;
+}
+.option-card .btn {
+  font-size: .85rem;
+  padding: .25rem .75rem;
+}
+
+.result-card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
+}
+
+#resultImage {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 80%;
+  max-height: 300px;
+  margin-top: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.d-none {
+  display: none !important;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

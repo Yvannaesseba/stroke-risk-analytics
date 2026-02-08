@@ -1,0 +1,27 @@
+# Data files
+data.csv
+*.csv
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter
+.ipynb_checkpoints
+
+# Flask
+instance/
+
+# Environment
+venv/
+.venv
+
+# IDE
+.vscode/
+.DS_Store
+
+# Reports
+*.docx
+~$*.docx
+*.tmp
