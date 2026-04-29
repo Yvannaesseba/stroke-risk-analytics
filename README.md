@@ -1,6 +1,6 @@
 # Stroke Risk Analytics System
 
-A clinical decision support tool built to explore stroke risk patterns across 172,000 simulated patient records. Built with pure Python and a Flask web interface — no pandas or numpy — to demonstrate low-level data engineering alongside clinical insight.
+A clinical decision support tool built to explore stroke risk patterns across 172,000 simulated patient records. Built with pure Python and a Flask web interface no pandas or numpy  to demonstrate low-level data engineering alongside clinical insight.
 
 **Live dashboard:** run locally via `python3 gui.py` → `http://localhost:5000`
 
@@ -8,7 +8,7 @@ A clinical decision support tool built to explore stroke risk patterns across 17
 
 ## The Problem
 
-Stroke is one of the leading causes of death and disability in the UK. Early identification of at-risk patients — particularly those with compounding risk factors like hypertension, heart disease, and lifestyle behaviours — can meaningfully support clinical intervention. This project explores what patterns emerge when those risk factors are analysed together across a large patient dataset.
+Stroke is one of the leading causes of death and disability in the UK. Early identification of at-risk patients, particularly those with compounding risk factors like hypertension, heart disease, and lifestyle behaviours, can meaningfully support clinical intervention. This project explores what patterns emerge when those risk factors are analysed together across a large patient dataset.
 
 ---
 
