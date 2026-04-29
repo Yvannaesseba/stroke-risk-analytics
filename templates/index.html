@@ -1,73 +1,784 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Stroke Data Analytics Dashboard</title>
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stroke Risk Analytics</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0f1f3d;
+      --teal: #1a7f6e;
+      --teal-light: #22a090;
+      --cream: #f7f5f0;
+      --cream-dark: #ece9e1;
+      --red: #c0392b;
+      --amber: #d68910;
+      --text: #1a1a2e;
+      --text-muted: #5a6070;
+      --white: #ffffff;
+      --shadow: 0 4px 24px rgba(15,31,61,0.10);
+      --shadow-lg: 0 8px 40px rgba(15,31,61,0.15);
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--navy);
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      color: var(--white);
+      font-size: 20px;
+      letter-spacing: -0.3px;
+    }
+    .logo span { color: var(--teal-light); }
+    .badge {
+      background: rgba(26,127,110,0.2);
+      border: 1px solid rgba(26,127,110,0.4);
+      color: #5ecfbe;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* HERO */
+    .hero {
+      background: var(--navy);
+      padding: 56px 48px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -80px; top: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(26,127,110,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 4vw, 52px);
+      color: var(--white);
+      line-height: 1.15;
+      max-width: 600px;
+      margin-bottom: 16px;
+    }
+    .hero h1 em { color: var(--teal-light); font-style: normal; }
+    .hero p {
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .stats-row {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--teal-light);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+    }
+
+    /* MAIN LAYOUT */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 48px 48px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--teal);
+      margin-bottom: 20px;
+    }
+
+    /* ANALYSIS GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--teal);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.2s ease;
+      border-radius: 4px 0 0 4px;
+    }
+    .card:hover {
+      border-color: rgba(26,127,110,0.3);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .card:hover::before { transform: scaleY(1); }
+    .card.active {
+      border-color: var(--teal);
+      background: #f0faf8;
+    }
+    .card.active::before { transform: scaleY(1); }
+
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: #e8f5f3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+    .card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .run-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+      justify-content: center;
+    }
+    .run-btn:hover { background: var(--teal); }
+    .run-btn.loading { opacity: 0.6; pointer-events: none; }
+
+    /* Feature selector for query 10 */
+    .feature-select {
+      width: 100%;
+      margin-top: 10px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--cream-dark);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--cream);
+    }
+
+    /* RESULTS PANEL */
+    .results-panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: none;
+    }
+    .results-panel.visible { display: block; }
+
+    .results-header {
+      background: var(--navy);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .results-header h2 {
+      font-family: 'DM Serif Display', serif;
+      color: var(--white);
+      font-size: 22px;
+    }
+    .results-header .close-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .results-header .close-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .results-body {
+      padding: 32px;
+    }
+
+    /* CHART */
+    .chart-wrap {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .chart-wrap canvas { max-height: 340px; }
+
+    /* STAT CARDS in results */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .stat-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .stat-card .value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      color: var(--navy);
+    }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; border-radius: 12px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      background: var(--navy);
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--cream-dark);
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--cream); }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      background: transparent;
+      border: 1.5px solid var(--teal);
+      color: var(--teal);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .download-btn:hover { background: var(--teal); color: white; }
+
+    .insight-box {
+      background: linear-gradient(135deg, #e8f5f3, #f0faf8);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .insight-box strong { color: var(--teal); }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 32px;
+      color: var(--text-muted);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 15px; }
+
+    @media (max-width: 768px) {
+      header, .hero, .container { padding-left: 20px; padding-right: 20px; }
+      .hero { padding-top: 40px; padding-bottom: 48px; }
+      .stats-row { gap: 20px; }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="container my-4">
+<header>
+  <div class="logo">Stroke<span>Risk</span> Analytics</div>
+  <div class="badge">172,000 patient records</div>
+</header>
 
-    <!-- Header -->
-    <img src="{{ url_for('static', filename='images/header.jpg') }}"
-         alt="Stroke Data Banner" class="header-img">
+<div class="hero">
+  <h1>Clinical Stroke Risk <em>Intelligence</em> Dashboard</h1>
+  <p>Exploratory analysis of 172,000 simulated patient records across lifestyle, demographic, and clinical risk factors for stroke occurrence.</p>
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-value">172K</span>
+      <span class="stat-label">Patient Records</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">20</span>
+      <span class="stat-label">Clinical Features</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">11</span>
+      <span class="stat-label">Analyses</span>
+    </div>
+  </div>
+</div>
 
-    <h1 class="text-center mb-5">Stroke Data Analytics Dashboard</h1>
+<div class="container">
+  <div class="section-label">Select an analysis to run</div>
 
-    <!-- Query Options-->
-    <div class="row g-4 mb-5">
-      {% for id, title, icon in [
-        ('1', 'Age Stats: Smokers + Hypertension & Stroke', 'fas fa-smoking'),
-        ('2', 'Age & Glucose: Heart Disease + Stroke', 'fas fa-heartbeat'),
-        ('3', 'Age by Gender: Hypertension (Stroke vs. No Stroke)', 'fas fa-venus-mars'),
-        ('4', 'Smoking Habits vs. Stroke: Age Analysis', 'fas fa-smoking-ban'),
-        ('5', 'Urban vs. Rural: Stroke Age Analysis', 'fas fa-city'),
-        ('6', 'Dietary Habits: Stroke vs. Non-Stroke', 'fas fa-apple-alt'),
-        ('7', 'Hypertensive Patients Who Had Stroke', 'fas fa-heart'),
-        ('8', 'Hypertension + Stroke Status Overview', 'fas fa-clipboard'),
-        ('9', 'Heart Disease Patients with Stroke', 'fas fa-procedures'),
-        ('10', 'Descriptive Stats for Selected Feature', 'fas fa-chart-bar'),
-        ('11', 'Average Sleep Hours: Stroke vs. Non-Stroke', 'fas fa-bed')
-      ] %}
-      <div class="col-sm-6 col-md-4 col-lg-3">
-        <div class="card option-card text-center shadow-sm">
-          <i class="{{ icon }}"></i>
-          <h5>{{ title }}</h5>
-          <button class="btn btn-primary mt-2" onclick="runQuery('{{ id }}')">
-            Run Analysis
-          </button>
-        </div>
-      </div>
-      {% endfor %}
+  <div class="grid">
+
+    <div class="card" id="card-1">
+      <div class="card-icon">🚬</div>
+      <h3>Smokers + Hypertension → Stroke</h3>
+      <p>Age statistics for patients who smoked, had hypertension, and experienced a stroke.</p>
+      <button class="run-btn" onclick="runAnalysis('1', this)">Run Analysis</button>
     </div>
 
-    <!-- Spinner -->
-    <div id="spinner" class="d-none text-center my-3">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+    <div class="card" id="card-2">
+      <div class="card-icon">❤️</div>
+      <h3>Heart Disease + Stroke</h3>
+      <p>Age and glucose level profile of patients with heart disease who had a stroke.</p>
+      <button class="run-btn" onclick="runAnalysis('2', this)">Run Analysis</button>
     </div>
 
-    <!-- Output -->
-    <div id="results" class="result-card fade-in">
-      <h3 class="mb-4">Analysis Results</h3>
-	  <img id="resultImage" src="" alt="" class="fade-in" style="display: none;">
-      <div id="outputArea"></div>
-      <a id="downloadBtn" class="btn btn-outline-secondary mt-3 d-none"
-         download="analysis_results.csv">Download CSV</a>
+    <div class="card" id="card-3">
+      <div class="card-icon">⚧</div>
+      <h3>Gender × Hypertension × Stroke</h3>
+      <p>Age breakdown by gender for hypertensive patients — stroke vs no stroke.</p>
+      <button class="run-btn" onclick="runAnalysis('3', this)">Run Analysis</button>
     </div>
 
-    <!-- Footer -->
-    <footer class="text-center mt-5 mb-3">
-      <small>Stroke Stats Analysis</small>
-    </footer>
+    <div class="card" id="card-4">
+      <div class="card-icon">💨</div>
+      <h3>Smoking Status vs Stroke</h3>
+      <p>How smoking habits correlate with stroke occurrence and patient age.</p>
+      <button class="run-btn" onclick="runAnalysis('4', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-5">
+      <div class="card-icon">🏙️</div>
+      <h3>Urban vs Rural Stroke</h3>
+      <p>Stroke age analysis comparing patients from urban and rural areas.</p>
+      <button class="run-btn" onclick="runAnalysis('5', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-6">
+      <div class="card-icon">🥗</div>
+      <h3>Dietary Habits + Stroke</h3>
+      <p>Distribution of dietary habits among stroke and non-stroke patients.</p>
+      <button class="run-btn" onclick="runAnalysis('6', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-7">
+      <div class="card-icon">🩺</div>
+      <h3>Hypertension → Stroke Patients</h3>
+      <p>Count and records of patients whose hypertension directly led to stroke.</p>
+      <button class="run-btn" onclick="runAnalysis('7', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-8">
+      <div class="card-icon">📊</div>
+      <h3>Hypertension + Stroke Overview</h3>
+      <p>Overall breakdown of hypertensive patients by stroke occurrence rate.</p>
+      <button class="run-btn" onclick="runAnalysis('8', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-9">
+      <div class="card-icon">💔</div>
+      <h3>Heart Disease + Stroke Overview</h3>
+      <p>Stroke rate among patients diagnosed with heart disease.</p>
+      <button class="run-btn" onclick="runAnalysis('9', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-10">
+      <div class="card-icon">📈</div>
+      <h3>Descriptive Stats by Feature</h3>
+      <p>Summary statistics for any numeric clinical feature in the dataset.</p>
+      <select class="feature-select" id="feature-select">
+        <option value="age">Age</option>
+        <option value="bmi">BMI</option>
+        <option value="average_glucose_level">Average Glucose Level</option>
+        <option value="sleep_hours">Sleep Hours</option>
+      </select>
+      <button class="run-btn" onclick="runAnalysis('10', this)">Run Analysis</button>
+    </div>
+
+    <div class="card" id="card-11">
+      <div class="card-icon">😴</div>
+      <h3>Sleep Hours: Stroke vs Non-Stroke</h3>
+      <p>Average sleep duration compared between patients who did and did not have a stroke.</p>
+      <button class="run-btn" onclick="runAnalysis('11', this)">Run Analysis</button>
+    </div>
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='javascript/app.js') }}"></script>
+  <!-- RESULTS PANEL -->
+  <div class="results-panel" id="results-panel">
+    <div class="results-header">
+      <h2 id="results-title">Analysis Results</h2>
+      <button class="close-btn" onclick="closeResults()">✕</button>
+    </div>
+    <div class="results-body" id="results-body">
+      <div class="empty-state">
+        <div class="icon">📊</div>
+        <p>Select an analysis above to see results here.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentChart = null;
+
+const TITLES = {
+  '1': 'Age Stats: Smokers + Hypertension + Stroke',
+  '2': 'Age & Glucose: Heart Disease + Stroke',
+  '3': 'Gender × Hypertension × Stroke',
+  '4': 'Smoking Status vs Stroke Age',
+  '5': 'Urban vs Rural: Stroke Age Analysis',
+  '6': 'Dietary Habits: Stroke vs Non-Stroke',
+  '7': 'Hypertension → Stroke Patients',
+  '8': 'Hypertension + Stroke Status Overview',
+  '9': 'Heart Disease + Stroke Overview',
+  '10': 'Descriptive Statistics',
+  '11': 'Average Sleep Hours: Stroke vs Non-Stroke',
+};
+
+async function runAnalysis(queryId, btn) {
+  btn.innerHTML = '<span class="spinner"></span> Running...';
+  btn.classList.add('loading');
+
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`card-${queryId}`).classList.add('active');
+
+  const feature = queryId === '10' ? document.getElementById('feature-select').value : 'age';
+
+  try {
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query_id: queryId, feature })
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      renderResults(queryId, json.data);
+    } else {
+      showError(json.message || 'Analysis failed.');
+    }
+  } catch (e) {
+    showError('Network error. Is the server running?');
+  }
+
+  btn.innerHTML = 'Run Analysis';
+  btn.classList.remove('loading');
+}
+
+function closeResults() {
+  document.getElementById('results-panel').classList.remove('visible');
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  if (currentChart) { currentChart.destroy(); currentChart = null; }
+}
+
+function showError(msg) {
+  document.getElementById('results-title').textContent = 'Error';
+  document.getElementById('results-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${msg}</p></div>`;
+  document.getElementById('results-panel').classList.add('visible');
+  document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderResults(queryId, data) {
+  document.getElementById('results-title').textContent = TITLES[queryId];
+  const body = document.getElementById('results-body');
+  if (currentChart) { currentChart.destroy(); currentChart = null; }
+
+  let html = '';
+
+  if (queryId === '1') {
+    html = insightBox(`Among smokers with hypertension who had a stroke, the <strong>mean age was ${data['Mean Age']}</strong>, median ${data['Median Age']}, and mode ${data['Mode Age']} — indicating older patients are disproportionately affected.`);
+    html += statCards(data);
+    html += barChartHTML();
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makeBarChart(['Mean Age', 'Median Age', 'Mode Age'], [data['Mean Age'], data['Median Age'], data['Mode Age']], 'Age (years)');
+
+  } else if (queryId === '2') {
+    html = insightBox(`Heart disease patients who had a stroke had a <strong>mean age of ${data['Mean Age']}</strong> and a mean glucose level of <strong>${data['Mean Glucose Level']} mg/dL</strong> — elevated glucose is a key comorbidity.`);
+    html += statCards(data);
+    html += barChartHTML();
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makeBarChart(['Mean Age', 'Median Age', 'Mode Age'], [data['Mean Age'], data['Median Age'], data['Mode Age']], 'Age (years)');
+
+  } else if (queryId === '3' || queryId === '4' || queryId === '5') {
+    const groups = data.map(d => Object.values(d)[0]);
+    const means = data.map(d => d['Mean Age']);
+    html = insightBox(`Analysis across ${data.length} groups. Compare mean ages to identify which demographic groups are most at risk.`);
+    html += barChartHTML();
+    html += tableHTML(data);
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makeBarChart(groups, means, 'Mean Age (years)');
+
+  } else if (queryId === '6') {
+    const habits = data.map(d => d['dietary_habit']);
+    const strokeCounts = data.map(d => d['stroke_count']);
+    const noStrokeCounts = data.map(d => d['no_stroke_count']);
+    html = insightBox(`Dietary habit breakdown across stroke and non-stroke patients. Proportional differences may indicate lifestyle risk factors.`);
+    html += barChartHTML();
+    html += tableHTML(data);
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makeGroupedBarChart(habits, strokeCounts, noStrokeCounts);
+
+  } else if (queryId === '7') {
+    html = insightBox(`<strong>${data['count']} patients</strong> had both hypertension and a stroke. Showing first 50 records below.`);
+    html += statCards({ 'Total Patients': data['count'] });
+    html += tableHTML(data['records'] || []);
+    body.innerHTML = html + downloadBtn(data);
+
+  } else if (queryId === '8') {
+    const total = data['Total Hypertensive Patients'];
+    const withStroke = data['Hypertension With Stroke'];
+    const withoutStroke = data['Hypertension Without Stroke'];
+    html = insightBox(`Of <strong>${total} hypertensive patients</strong>, <strong>${data['Stroke Rate (%)']}%</strong> went on to have a stroke — highlighting hypertension as a major risk factor.`);
+    html += statCards(data);
+    html += pieChartHTML();
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makePieChart(['With Stroke', 'Without Stroke'], [withStroke, withoutStroke]);
+
+  } else if (queryId === '9') {
+    const total = data['Total Heart Disease Patients'];
+    html = insightBox(`Of <strong>${total} patients with heart disease</strong>, <strong>${data['Stroke Rate (%)']}%</strong> experienced a stroke — a significant comorbidity rate.`);
+    html += statCards(data);
+    html += pieChartHTML();
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makePieChart(['With Stroke', 'Without Stroke'], [data['Heart Disease With Stroke'], data['Heart Disease Without Stroke']]);
+
+  } else if (queryId === '10') {
+    html = insightBox(`Descriptive statistics for <strong>${data['Feature']}</strong> across all ${data['Count']?.toLocaleString()} patients. Mean: <strong>${data['Mean']}</strong>, Std Dev: <strong>${data['Standard Dev']}</strong>.`);
+    html += statCards(data);
+    body.innerHTML = html + downloadBtn(data);
+
+  } else if (queryId === '11') {
+    const strokeAvg = data['Average Sleep Hours (Stroke)'];
+    const noStrokeAvg = data['Average Sleep Hours (No Stroke)'];
+    const diff = Math.abs(strokeAvg - noStrokeAvg).toFixed(2);
+    html = insightBox(`Stroke patients averaged <strong>${strokeAvg} hours</strong> of sleep vs <strong>${noStrokeAvg} hours</strong> for non-stroke patients — a difference of ${diff} hours.`);
+    html += statCards(data);
+    html += barChartHTML();
+    body.innerHTML = html + downloadBtn(data);
+    currentChart = makeBarChart(['Stroke Patients', 'Non-Stroke Patients'], [strokeAvg, noStrokeAvg], 'Average Sleep Hours');
+  }
+
+  document.getElementById('results-panel').classList.add('visible');
+  document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function insightBox(text) {
+  return `<div class="insight-box">💡 ${text}</div>`;
+}
+
+function statCards(data) {
+  if (typeof data !== 'object' || Array.isArray(data)) return '';
+  const entries = Object.entries(data).filter(([k]) => k !== 'records');
+  return `<div class="stat-cards">${entries.map(([k, v]) => `
+    <div class="stat-card">
+      <div class="label">${k}</div>
+      <div class="value">${typeof v === 'number' ? v.toLocaleString() : v}</div>
+    </div>`).join('')}</div>`;
+}
+
+function tableHTML(rows) {
+  if (!rows || rows.length === 0) return '<p style="color:var(--text-muted);font-size:13px;">No records to display.</p>';
+  const headers = Object.keys(rows[0]);
+  return `<div class="table-wrap"><table>
+    <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.slice(0, 100).map(row => `<tr>${headers.map(h => `<td>${row[h] ?? '—'}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function barChartHTML() {
+  return `<div class="chart-wrap"><canvas id="mainChart"></canvas></div>`;
+}
+function pieChartHTML() {
+  return `<div class="chart-wrap"><canvas id="mainChart"></canvas></div>`;
+}
+
+function downloadBtn(data) {
+  return `<button class="download-btn" onclick='downloadJSON(${JSON.stringify(data)})'>⬇ Download Results (JSON)</button>`;
+}
+
+function downloadJSON(data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'stroke_analysis_results.json';
+  a.click();
+}
+
+const TEAL = 'rgba(26,127,110,0.85)';
+const NAVY = 'rgba(15,31,61,0.85)';
+const RED = 'rgba(192,57,43,0.8)';
+const AMBER = 'rgba(214,137,16,0.8)';
+
+function makeBarChart(labels, values, yLabel) {
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => [TEAL, NAVY, AMBER, RED][i % 4]),
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { title: { display: true, text: yLabel }, beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function makeGroupedBarChart(labels, dataset1, dataset2) {
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Stroke', data: dataset1, backgroundColor: RED, borderRadius: 6 },
+        { label: 'No Stroke', data: dataset2, backgroundColor: TEAL, borderRadius: 6 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: 'Patient Count' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function makePieChart(labels, values) {
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [RED, TEAL],
+        borderWidth: 0,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.raw / total) * 100).toFixed(1);
+              return ` ${ctx.label}: ${ctx.raw.toLocaleString()} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+</script>
 </body>
 </html>
