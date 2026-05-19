@@ -1,0 +1,246 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Stroke Risk Analytics — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0d1b2a;
+  --navy2:#162032;
+  --teal:#2dd4bf;
+  --teal2:#14b8a6;
+  --teal-bg:rgba(45,212,191,0.08);
+  --teal-border:rgba(45,212,191,0.2);
+  --coral:#e07a5f;
+  --gold:#c9a84c;
+  --sand:#f4f0e8;
+  --cream:#f8f5ef;
+  --white:#ffffff;
+  --border:#e8e2d8;
+  --border2:#d4cec4;
+  --text:#1a2535;
+  --muted:#6b7280;
+  --muted2:#9ca3af;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6}
+
+.hero{background:var(--navy);color:#fff;padding:100px 6vw 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 80% 40%,rgba(45,212,191,0.08) 0%,transparent 60%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.25);border-radius:100px;padding:6px 14px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:32px}
+.badge-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.8rem,6vw,5rem);line-height:1.05;margin-bottom:24px;max-width:750px}
+.hero h1 em{font-style:italic;color:var(--teal)}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.55);max-width:540px;line-height:1.8;margin-bottom:48px}
+.stats-row{display:flex;gap:48px;flex-wrap:wrap;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.stat-item{display:flex;flex-direction:column;gap:4px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:2.4rem;color:var(--teal);line-height:1}
+.stat-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.hero-links{display:flex;gap:16px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:600;letter-spacing:0.04em;text-decoration:none;transition:all 0.2s}
+.btn-primary{background:var(--teal);color:var(--navy);border:2px solid var(--teal)}
+.btn-primary:hover{background:var(--teal2);border-color:var(--teal2)}
+.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.2)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+
+section{padding:72px 6vw}
+.sh{margin-bottom:40px}
+.sh h2{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--navy);margin-bottom:6px}
+.sh p{color:var(--muted);font-size:14px}
+.label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal2);margin-bottom:12px;display:block;font-weight:600}
+
+.story{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.story-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.story-item{padding:48px 40px;border-right:1px solid var(--border)}
+.story-item:last-child{border-right:none}
+.story-num{font-family:'DM Serif Display',serif;font-size:4rem;color:var(--border2);line-height:1;margin-bottom:16px}
+.story-title{font-size:13px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--teal2)}
+.story-text{font-size:13.5px;color:var(--muted);line-height:1.75}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;transition:box-shadow 0.2s}
+.kpi:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:2.2rem;color:var(--teal2);line-height:1;margin-bottom:6px}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px}
+.kpi-note{font-size:12px;color:var(--muted2);line-height:1.5}
+
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.chart-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px}
+.chart-box h3{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em}
+.chart-box p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.chart-wrap{position:relative;height:220px}
+.insight-box{background:var(--teal-bg);border:1px solid var(--teal-border);border-left:3px solid var(--teal2);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--muted);line-height:1.7;margin-top:16px}
+.insight-box strong{color:var(--navy)}
+
+.analyses{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.acard{background:var(--white);padding:28px 24px;transition:background 0.2s}
+.acard:hover{background:var(--cream)}
+.acard-num{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--teal2);margin-bottom:10px;line-height:1}
+.acard-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.acard-desc{font-size:12px;color:var(--muted);line-height:1.6}
+
+.findings{background:var(--cream)}
+.findgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.fnd{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:all 0.35s cubic-bezier(0.22,1,0.36,1);cursor:default;position:relative;z-index:1}
+.fnd:hover{border-color:var(--teal2);transform:scale(1.045);z-index:10;box-shadow:0 20px 60px rgba(0,0,0,0.1),0 0 0 1px var(--teal2)}
+.fnd:hover .fnum{color:var(--teal2)}
+.fnd:hover .ftitle{color:var(--teal2)}
+.fnum{font-family:'DM Serif Display',serif;font-size:3rem;color:var(--border2);line-height:1;margin-bottom:10px;transition:color 0.3s}
+.ftitle{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;transition:color 0.3s}
+.ftext{font-size:12.5px;color:var(--muted);line-height:1.65}
+
+.tech{background:var(--white);border-top:1px solid var(--border)}
+.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.tech-card{background:var(--cream);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+.tech-name{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.tech-role{font-size:12px;color:var(--muted)}
+
+footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 6vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+footer p{font-size:13px}
+footer a{color:var(--teal);text-decoration:none;font-size:13px}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:900px){.story-grid,.kpi-grid,.agrid,.chart-grid,.findgrid,.tech-grid{grid-template-columns:1fr 1fr}.story-item{border-right:none;border-bottom:1px solid var(--border)}}
+@media(max-width:600px){.story-grid,.kpi-grid,.agrid,.chart-grid,.findgrid,.tech-grid{grid-template-columns:1fr}.stats-row{gap:28px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="badge"><span class="badge-dot"></span>Python · Flask · SQL · pandas</div>
+  <h1>Stroke Risk<br><em>Intelligence</em> Dashboard</h1>
+  <p class="hero-sub">An end-to-end clinical analytics system exploring lifestyle, demographic, and physiological risk factors for stroke across 172,000 patient records.</p>
+  <div class="stats-row">
+    <div class="stat-item"><span class="stat-num">172K</span><span class="stat-label">Patient Records</span></div>
+    <div class="stat-item"><span class="stat-num">20</span><span class="stat-label">Clinical Features</span></div>
+    <div class="stat-item"><span class="stat-num">11</span><span class="stat-label">Analyses</span></div>
+    <div class="stat-item"><span class="stat-num">~10%</span><span class="stat-label">Overall Stroke Rate</span></div>
+  </div>
+  <div class="hero-links">
+    <a href="https://github.com/Yvannaesseba/stroke-risk-analytics" class="btn btn-primary" target="_blank">View on GitHub →</a>
+    <a href="#findings" class="btn btn-ghost">See Findings ↓</a>
+  </div>
+</div>
+
+<section class="story">
+  <div class="story-grid">
+    <div class="story-item"><div class="story-num">01</div><div class="story-title">The Problem</div><div class="story-text">Stroke is a leading cause of death and disability worldwide, yet many contributing risk factors remain poorly understood in combination. Clinical datasets offer the chance to surface patterns that individual analysis misses.</div></div>
+    <div class="story-item"><div class="story-num">02</div><div class="story-title">The Approach</div><div class="story-text">A Flask-based clinical decision support tool was built on 172,000 simulated patient records. SQL queries power 11 targeted analyses across lifestyle, demographic, and physiological dimensions, each returning charts and plain-English insights.</div></div>
+    <div class="story-item"><div class="story-num">03</div><div class="story-title">The Outcome</div><div class="story-text">Hypertension and heart disease emerged as the strongest comorbidities, each carrying roughly 10% stroke rates. Counter-intuitively, sleep duration and diet type showed minimal predictive signal, challenging common assumptions about lifestyle risk.</div></div>
+  </div>
+</section>
+
+<section>
+  <span class="label">Key Numbers from the Data</span>
+  <div class="sh"><h2>What the Numbers Say</h2><p>Real figures from 172,000 patient records across 11 analyses.</p></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val">9.8%</div><div class="kpi-label">Hypertension Stroke Rate</div><div class="kpi-note">2,522 of 25,823 hypertensive patients experienced a stroke.</div></div>
+    <div class="kpi"><div class="kpi-val">10.1%</div><div class="kpi-label">Heart Disease Stroke Rate</div><div class="kpi-note">1,737 of 17,248 heart disease patients experienced a stroke.</div></div>
+    <div class="kpi"><div class="kpi-val">54.68</div><div class="kpi-label">Mean Age, Smokers + Hypertension</div><div class="kpi-note">739 patients. Mode age 73 — older patients are disproportionately affected.</div></div>
+    <div class="kpi"><div class="kpi-val">183.53</div><div class="kpi-label">Mean Glucose, Heart Disease + Stroke</div><div class="kpi-note">mg/dL. Significantly elevated. Mean age in this group was 53.58.</div></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <h3>Comorbidity Stroke Rates</h3>
+      <p>Percentage of patients who had a stroke, by risk condition</p>
+      <div class="chart-wrap"><canvas id="comorb"></canvas></div>
+      <div class="insight-box">Hypertension and heart disease both carry a <strong>~10% stroke rate</strong>, making them the two strongest single-condition predictors in this dataset.</div>
+    </div>
+    <div class="chart-box">
+      <h3>Clinical Feature Means</h3>
+      <p>Average values across all 172,000 patients</p>
+      <div class="chart-wrap"><canvas id="desc"></canvas></div>
+      <div class="insight-box">Mean BMI of <strong>30.01</strong> and mean glucose of <strong>184.93 mg/dL</strong> reflect a clinically high-risk population, consistent with stroke study cohorts.</div>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-box">
+      <h3>Gender x Hypertension x Stroke</h3>
+      <p>Mean age across 4 demographic groups</p>
+      <div class="chart-wrap"><canvas id="gender"></canvas></div>
+      <div class="insight-box">Female patients with stroke had the highest mean age at <strong>54.69</strong>. Age differences are narrow across all four groups, suggesting it is not a strong standalone differentiator.</div>
+    </div>
+    <div class="chart-box">
+      <h3>Sleep Hours: Stroke vs Non-Stroke</h3>
+      <p>Average sleep duration by stroke status</p>
+      <div class="chart-wrap"><canvas id="sleep"></canvas></div>
+      <div class="insight-box">Stroke patients averaged <strong>7.51 hours</strong> vs 7.50 for non-stroke patients — a difference of just 0.01 hours. A meaningful null result.</div>
+    </div>
+  </div>
+</section>
+
+<section class="analyses">
+  <span class="label">What Was Analysed</span>
+  <div class="sh"><h2>11 Clinical Analyses</h2><p>Each runs a targeted SQL query and returns results with charts and plain-English insights.</p></div>
+  <div class="agrid">
+    <div class="acard"><div class="acard-num">01</div><div class="acard-title">Smokers + Hypertension → Stroke</div><div class="acard-desc">Age statistics for patients who smoked, had hypertension, and experienced a stroke. 739 patients, mean age 54.68.</div></div>
+    <div class="acard"><div class="acard-num">02</div><div class="acard-title">Heart Disease + Stroke</div><div class="acard-desc">Age and glucose profile of heart disease patients who had a stroke. 1,737 patients, mean glucose 183.53 mg/dL.</div></div>
+    <div class="acard"><div class="acard-num">03</div><div class="acard-title">Gender x Hypertension x Stroke</div><div class="acard-desc">Age breakdown across 4 demographic groups. Female with stroke: 54.69, Male with stroke: 54.01.</div></div>
+    <div class="acard"><div class="acard-num">04</div><div class="acard-title">Smoking Status vs Stroke</div><div class="acard-desc">How smoking habits correlate with stroke occurrence across 8 groups. Current smokers with stroke: mean age 54.75.</div></div>
+    <div class="acard"><div class="acard-num">05</div><div class="acard-title">Urban vs Rural Stroke</div><div class="acard-desc">Stroke age analysis comparing urban and rural patients. Urban: 54.19, Rural: 53.93 mean age.</div></div>
+    <div class="acard"><div class="acard-num">06</div><div class="acard-title">Dietary Habits + Stroke</div><div class="acard-desc">Stroke rates across Mixed, Non-Vegetarian, and Vegetarian diets. All three groups show a consistent 10% stroke rate.</div></div>
+    <div class="acard"><div class="acard-num">07</div><div class="acard-title">Hypertension → Stroke Patients</div><div class="acard-desc">Full record view of 2,522 patients with both hypertension and stroke, across all 20 clinical features.</div></div>
+    <div class="acard"><div class="acard-num">08</div><div class="acard-title">Hypertension + Stroke Overview</div><div class="acard-desc">9.8% of 25,823 hypertensive patients had a stroke. Donut chart breakdown with key metrics.</div></div>
+    <div class="acard"><div class="acard-num">09</div><div class="acard-title">Heart Disease + Stroke Overview</div><div class="acard-desc">10.1% of 17,248 heart disease patients had a stroke, one of the highest rates in the dataset.</div></div>
+    <div class="acard"><div class="acard-num">10</div><div class="acard-title">Descriptive Stats by Feature</div><div class="acard-desc">Summary statistics for any numeric feature. Age: mean 54.01. BMI: mean 30.01. Glucose: mean 184.93.</div></div>
+    <div class="acard"><div class="acard-num">11</div><div class="acard-title">Sleep Hours: Stroke vs Non-Stroke</div><div class="acard-desc">Stroke: 7.51 hrs vs non-stroke 7.50 hrs. Sleep duration is not a meaningful differentiator.</div></div>
+  </div>
+</section>
+
+<section class="findings" id="findings">
+  <span class="label">Key Findings</span>
+  <div class="sh"><h2>What the Data Revealed</h2><p>Six insights drawn from 11 analyses across 172,000 patient records.</p></div>
+  <div class="findgrid">
+    <div class="fnd"><div class="fnum">01</div><div class="ftitle">Hypertension is the strongest comorbidity</div><div class="ftext">Of 25,823 hypertensive patients, 9.8% had a stroke — 2,522 individuals. This is the largest absolute count of any risk group and positions hypertension as the primary clinical warning sign.</div></div>
+    <div class="fnd"><div class="fnum">02</div><div class="ftitle">Heart disease compounds the risk</div><div class="ftext">10.1% of heart disease patients experienced a stroke. Mean glucose in this group was 183.53 mg/dL, pointing to elevated glucose as a key comorbidity alongside cardiac conditions.</div></div>
+    <div class="fnd"><div class="fnum">03</div><div class="ftitle">Age skews older in high-risk groups</div><div class="ftext">Among smokers with hypertension who had a stroke, the mode age was 73, well above the mean of 54.68. Older patients carry a disproportionate burden within already high-risk groups.</div></div>
+    <div class="fnd"><div class="fnum">04</div><div class="ftitle">Diet type has no predictive signal</div><div class="ftext">Mixed, Non-Vegetarian, and Vegetarian diets all showed a 10% stroke rate. Dietary category alone does not differentiate stroke risk, suggesting diet quality matters more than broad dietary labels.</div></div>
+    <div class="fnd"><div class="fnum">05</div><div class="ftitle">Sleep duration is not a differentiator</div><div class="ftext">The difference in average sleep hours between stroke and non-stroke patients was just 0.01 hours. Sleep quantity alone should not be used as a standalone stroke risk indicator.</div></div>
+    <div class="fnd"><div class="fnum">06</div><div class="ftitle">Urban and rural risk profiles are similar</div><div class="ftext">Urban stroke patients had a mean age of 54.19 vs 53.93 in rural areas. Geography does not appear to be a major independent driver of stroke risk in this dataset.</div></div>
+  </div>
+</section>
+
+<section class="tech">
+  <span class="label">Technical Stack</span>
+  <div class="sh"><h2>How It Was Built</h2><p>A full-stack clinical analytics application built in Python.</p></div>
+  <div class="tech-grid">
+    <div class="tech-card"><div class="tech-name">Python + Flask</div><div class="tech-role">Backend API and routing</div></div>
+    <div class="tech-card"><div class="tech-name">SQLite + SQL</div><div class="tech-role">Query engine for all 11 analyses</div></div>
+    <div class="tech-card"><div class="tech-name">pandas</div><div class="tech-role">Data loading and transformation</div></div>
+    <div class="tech-card"><div class="tech-name">Chart.js</div><div class="tech-role">Interactive result visualisation</div></div>
+    <div class="tech-card"><div class="tech-name">HTML / CSS / JS</div><div class="tech-role">Frontend dashboard interface</div></div>
+    <div class="tech-card"><div class="tech-name">JSON Export</div><div class="tech-role">Downloadable results per analysis</div></div>
+    <div class="tech-card"><div class="tech-name">172K Records</div><div class="tech-role">Simulated clinical patient dataset</div></div>
+    <div class="tech-card"><div class="tech-name">20 Features</div><div class="tech-role">Age, BMI, glucose, smoking, diet and more</div></div>
+  </div>
+</section>
+
+<footer>
+  <p>Stroke Risk Analytics — Clinical Decision Support System</p>
+  <a href="https://github.com/Yvannaesseba/stroke-risk-analytics" target="_blank">View on GitHub →</a>
+</footer>
+
+<script>
+const teal='#2dd4bf',teal2='#14b8a6',coral='#e07a5f',gold='#c9a84c',navy='#0d1b2a';
+const muted='rgba(107,114,128,0.8)';
+const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e8e2d8',borderWidth:1,titleColor:navy,bodyColor:'#6b7280',padding:12}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:muted,font:{size:11}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:muted,font:{size:11}}}}};
+
+new Chart(document.getElementById('comorb'),{type:'bar',data:{labels:['Hypertension','Heart Disease','Overall'],datasets:[{data:[9.8,10.1,10],backgroundColor:[teal,coral,gold],borderRadius:8,borderWidth:0}]},options:{...base,plugins:{...base.plugins,tooltip:{...base.plugins.tooltip,callbacks:{label:ctx=>`${ctx.raw}% stroke rate`}}},scales:{...base.scales,y:{...base.scales.y,ticks:{...base.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+new Chart(document.getElementById('desc'),{type:'bar',data:{labels:['Mean Age (yrs)','Mean BMI','Mean Glucose ÷10'],datasets:[{data:[54.01,30.01,18.49],backgroundColor:[teal,gold,coral],borderRadius:8,borderWidth:0}]},options:{...base,plugins:{...base.plugins,tooltip:{...base.plugins.tooltip,callbacks:{label:ctx=>{const u=['years','kg/m²','mg/dL ×10'];return `${ctx.raw} ${u[ctx.dataIndex]}`}}}}}});
+
+new Chart(document.getElementById('gender'),{type:'bar',data:{labels:['Female Stroke','Female No Stroke','Male Stroke','Male No Stroke'],datasets:[{data:[54.69,54.37,54.01,54.14],backgroundColor:[coral,'rgba(224,122,95,0.3)',teal,'rgba(45,212,191,0.3)'],borderRadius:8,borderWidth:0}]},options:{...base,scales:{...base.scales,y:{...base.scales.y,min:53.8,ticks:{...base.scales.y.ticks,callback:v=>v+'yr'}}}}});
+
+new Chart(document.getElementById('sleep'),{type:'bar',data:{labels:['Stroke','Non-Stroke'],datasets:[{data:[7.51,7.50],backgroundColor:[coral,teal],borderRadius:8,borderWidth:0}]},options:{...base,scales:{...base.scales,y:{...base.scales.y,min:7.48,ticks:{...base.scales.y.ticks,callback:v=>v+'h'}}},plugins:{...base.plugins,tooltip:{...base.plugins.tooltip,callbacks:{label:ctx=>`${ctx.raw} hours average`}}}}});
+</script>
+</body>
+</html>
